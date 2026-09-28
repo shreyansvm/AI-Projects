@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Reclist — Product Spec</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #F9F8F6;
+    --surface: #ffffff;
+    --border: oklch(0.91 0.006 90);
+    --border-strong: #17150F;
+    --text: #17150F;
+    --text-muted: oklch(0.55 0.01 90);
+    --text-faint: oklch(0.72 0.01 90);
+    --accent-indigo: oklch(0.45 0.14 285);
+    --accent-amber: oklch(0.6 0.13 62);
+    --accent-green: oklch(0.47 0.09 152);
+    --accent-slate: oklch(0.52 0.02 260);
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --shadow-card: 0 2px 8px rgba(0,0,0,0.07);
+    --shadow-float: 0 8px 24px rgba(0,0,0,0.11);
+  }
+  html { background: var(--bg); color: var(--text); font-family: Geist, Helvetica, sans-serif; -webkit-font-smoothing: antialiased; }
+  body { min-height: 100vh; }
+
+  /* ── Shell ── */
+  .shell { display: grid; grid-template-rows: auto 1fr; min-height: 100vh; }
+
+  /* ── Header ── */
+  .header { position: sticky; top: 0; z-index: 30; background: rgba(249,248,246,0.88); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); padding: 0 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px; height: 56px; }
+  .header-brand { display: flex; align-items: center; gap: 10px; }
+  .brand-dots { display: flex; gap: 4px; }
+  .dot { width: 8px; height: 8px; border-radius: 2px; transform: rotate(45deg); }
+  .dot-1 { background: var(--accent-indigo); }
+  .dot-2 { background: var(--accent-amber); }
+  .dot-3 { background: var(--accent-green); }
+  .brand-name { font-size: 16px; font-weight: 600; letter-spacing: -0.02em; }
+  .brand-label { font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+
+  /* ── Tabs ── */
+  .tabs { display: flex; gap: 2px; }
+  .tab { height: 32px; padding: 0 14px; border: 1px solid transparent; border-radius: 999px; background: none; font-family: Geist, Helvetica, sans-serif; font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.15s ease; }
+  .tab:hover { color: var(--text); border-color: var(--border); background: var(--surface); }
+  .tab.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+  /* ── Content ── */
+  .content { display: none; max-width: 860px; margin: 0 auto; padding: 48px 32px 96px; }
+  .content.active { display: block; }
+
+  /* ── Typography ── */
+  h1 { font-size: 32px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.15; padding-bottom: 6px; }
+  h2 { font-size: 18px; font-weight: 600; letter-spacing: -0.015em; padding: 40px 0 12px; }
+  h3 { font-size: 14px; font-weight: 600; letter-spacing: -0.005em; padding: 24px 0 8px; }
+  p { font-size: 15px; line-height: 1.65; color: oklch(0.38 0.01 90); padding-bottom: 12px; }
+  .lead { font-size: 17px; line-height: 1.6; color: var(--text-muted); padding-bottom: 0; }
+  .mono { font-family: 'Geist Mono', monospace; }
+  .section-rule { height: 1px; background: var(--border); margin: 8px 0; }
+  code { font-family: 'Geist Mono', monospace; font-size: 12px; background: oklch(0.95 0.005 90); padding: 2px 6px; border-radius: 4px; }
+
+  /* ── Cards / Callouts ── */
+  .callout { padding: 16px 18px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); margin-bottom: 12px; }
+  .callout-title { font-size: 12px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); padding-bottom: 6px; }
+  .callout p { padding-bottom: 0; }
+  .callout.accent-indigo { border-left: 3px solid var(--accent-indigo); }
+  .callout.accent-amber  { border-left: 3px solid var(--accent-amber); }
+  .callout.accent-green  { border-left: 3px solid var(--accent-green); }
+  .callout.accent-slate  { border-left: 3px solid var(--accent-slate); }
+
+  /* ── Grid ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  @media (max-width: 640px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  /* ── Tables ── */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 20px; }
+  thead th { font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); text-align: left; padding: 0 12px 8px 0; border-bottom: 1px solid var(--border); }
+  tbody td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.5; color: oklch(0.38 0.01 90); }
+  tbody td:first-child { color: var(--text); font-weight: 500; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  /* ── Tag / Badge ── */
+  .tag { display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+  .tag-indigo { background: oklch(0.94 0.04 285); color: var(--accent-indigo); }
+  .tag-amber  { background: oklch(0.96 0.04 62);  color: oklch(0.45 0.13 62); }
+  .tag-green  { background: oklch(0.94 0.04 152); color: oklch(0.36 0.09 152); }
+  .tag-slate  { background: oklch(0.94 0.01 260); color: oklch(0.4 0.05 260); }
+  .tag-neutral { background: oklch(0.94 0.005 90); color: var(--text-muted); }
+
+  /* ── Swatch row ── */
+  .swatches { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+  .swatch { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); }
+  .swatch-dot { width: 28px; height: 28px; border-radius: 6px; flex: none; }
+  .swatch-name { font-size: 13px; font-weight: 500; }
+  .swatch-val  { font-family: 'Geist Mono', monospace; font-size: 11px; color: var(--text-muted); }
+
+  /* ── Component preview ── */
+  .preview-box { border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 20px; }
+  .preview-label { font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); padding: 10px 14px; border-bottom: 1px solid var(--border); background: oklch(0.97 0.003 90); }
+  .preview-area { padding: 24px; background: var(--bg); }
+
+  /* ── Component: Card ── */
+  .demo-card { display: flex; flex-direction: column; width: 220px; border-radius: 12px; background: #fff; box-shadow: var(--shadow-card); overflow: hidden; }
+  .demo-card-bar { height: 3px; }
+  .demo-card-body { padding: 14px 14px 12px; display: flex; flex-direction: column; gap: 9px; }
+  .demo-card-cat { font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .demo-card-title { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; }
+  .demo-card-meta { font-size: 12px; color: var(--text-muted); }
+  .demo-card-rec { display: flex; align-items: center; gap: 7px; margin-top: 4px; }
+  .demo-card-avatar { width: 20px; height: 20px; border-radius: 999px; display: grid; place-items: center; font-size: 10px; font-weight: 600; color: #fff; flex: none; }
+  .demo-card-by { font-size: 12px; color: var(--text-muted); }
+
+  /* ── Component: Tab pill ── */
+  .demo-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+  .demo-tab { display: flex; align-items: center; gap: 7px; height: 34px; padding: 0 14px; border-radius: 999px; font-size: 14px; cursor: default; }
+  .demo-tab-active { background: #17150F; color: #F9F8F6; border: 1px solid #17150F; }
+  .demo-tab-idle   { background: #fff; color: oklch(0.4 0.01 90); border: 1px solid oklch(0.9 0.006 90); }
+  .demo-tab-dot { width: 7px; height: 7px; border-radius: 999px; }
+  .demo-tab-count { font-family: 'Geist Mono', monospace; font-size: 11px; opacity: 0.5; }
+
+  /* ── Component: Done chip ── */
+  .demo-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .demo-chip { display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px; background: #fff; color: oklch(0.6 0.01 90); font-size: 13px; border: 1px solid var(--border); }
+  .demo-chip-check { color: oklch(0.55 0.09 150); }
+  .demo-chip-undo { border: none; background: none; font-size: 11px; color: var(--accent-indigo); cursor: pointer; padding: 0; }
+
+  /* ── Section header with diamond ── */
+  .section-head { display: flex; align-items: center; gap: 10px; padding-bottom: 14px; }
+  .section-head-diamond { width: 9px; height: 9px; border-radius: 2px; transform: rotate(45deg); flex: none; }
+  .section-head-label { font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); }
+  .section-head-rule { flex: 1; height: 1px; background: oklch(0.92 0.006 90); }
+
+  /* ── User story list ── */
+  .story-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+  .story { display: flex; gap: 12px; padding: 12px 14px; border-radius: var(--radius-md); background: var(--surface); border: 1px solid var(--border); font-size: 14px; line-height: 1.5; color: oklch(0.38 0.01 90); }
+  .story-num { font-family: 'Geist Mono', monospace; font-size: 11px; color: var(--text-faint); flex: none; padding-top: 2px; }
+
+  /* ── Checklist ── */
+  .checklist { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
+  .check-item { display: flex; align-items: baseline; gap: 10px; font-size: 14px; color: oklch(0.38 0.01 90); }
+  .check-in  { color: oklch(0.47 0.09 152); font-size: 13px; }
+  .check-out { color: var(--text-faint); font-size: 13px; }
+
+  /* ── Trade-off table ── */
+  .tradeoff { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+  .tradeoff-row { display: grid; grid-template-columns: 160px 1fr 1fr; gap: 12px; padding: 12px 14px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); font-size: 13px; }
+  .tradeoff-label { font-weight: 600; color: var(--text); }
+  .tradeoff-pro { color: oklch(0.36 0.08 152); }
+  .tradeoff-con { color: oklch(0.5 0.16 25); }
+  .tradeoff-head { display: grid; grid-template-columns: 160px 1fr 1fr; gap: 12px; padding: 0 14px 6px; font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+
+  /* ── Build plan ── */
+  .build-phases { display: flex; flex-direction: column; gap: 2px; margin-bottom: 24px; }
+  .phase { display: grid; grid-template-columns: 120px 1fr; gap: 16px; padding: 14px 16px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); }
+  .phase-label { font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); padding-top: 2px; }
+  .phase-title { font-size: 14px; font-weight: 600; color: var(--text); padding-bottom: 4px; }
+  .phase-items { font-size: 13px; color: oklch(0.45 0.01 90); line-height: 1.65; }
+
+  /* ── Schema block ── */
+  .schema { font-family: 'Geist Mono', monospace; font-size: 13px; line-height: 1.7; background: #17150F; color: #F9F8F6; border-radius: var(--radius-md); padding: 20px 22px; margin-bottom: 20px; overflow-x: auto; }
+  .schema .key { color: oklch(0.78 0.12 285); }
+  .schema .type { color: oklch(0.72 0.1 62); }
+  .schema .comment { color: oklch(0.6 0.01 90); }
+
+  /* ── Anim tokens ── */
+  .anim-row { display: flex; align-items: center; gap: 14px; padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); margin-bottom: 8px; font-size: 13px; }
+  .anim-name { font-family: 'Geist Mono', monospace; font-size: 12px; font-weight: 500; width: 100px; flex: none; }
+  .anim-desc { color: oklch(0.45 0.01 90); flex: 1; }
+  .anim-val  { font-family: 'Geist Mono', monospace; font-size: 11px; color: var(--text-faint); }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ── Header ── -->
+  <header class="header">
+    <div class="header-brand">
+      <div class="brand-dots">
+        <span class="dot dot-1"></span>
+        <span class="dot dot-2"></span>
+        <span class="dot dot-3"></span>
+      </div>
+      <span class="brand-name">Reclist</span>
+      <span class="brand-label">Product Spec</span>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('product')">Product</button>
+      <button class="tab" onclick="switchTab('design')">Design</button>
+      <button class="tab" onclick="switchTab('tech')">Tech</button>
+    </div>
+  </header>
+
+  <!-- ════════════════════════════════════════
+       PRODUCT TAB
+  ════════════════════════════════════════ -->
+  <main id="tab-product" class="content active">
+    <h1>Product</h1>
+    <p class="lead">Reclist is a personal wishlist for recommendations from people you trust — movies, restaurants, parks, museums, anything — all in one place, with who told you.</p>
+
+    <div class="section-rule" style="margin-top:16px;"></div>
+
+    <h2>Problem</h2>
+    <p>When family and friends recommend a movie, restaurant, or place of interest, the recommendation lives in a text thread or in memory — and quietly disappears. By the time you're free on a Friday night or planning a weekend, you can't recall who said what, or whether you've already tried it.</p>
+    <p>Existing tools solve part of this: Letterboxd covers movies, Google Maps saves cover places, Notes catches everything else — but they're siloed, they lose the "who told you" context, and none give you a single view across all categories.</p>
+
+    <div class="callout accent-indigo" style="margin-top:4px;">
+      <div class="callout-title">Core insight</div>
+      <p>88–93% of consumers trust recommendations from friends and family more than any other source. Yet there is no default system for preserving them.</p>
+    </div>
+
+    <h2>User</h2>
+    <div class="callout" style="margin-top:4px;">
+      <div class="callout-title">Primary persona</div>
+      <p><strong>Shreyans</strong> — parent in his 30s, socially active in a close family and friend circle. Asks people he trusts for recommendations constantly but has no system for capturing them. Has young kids, so every movie night or weekend outing decision carries weight — time is scarce, bad picks are costly.</p>
+    </div>
+    <div class="grid-2" style="margin-top:4px;">
+      <div class="callout">
+        <div class="callout-title">Current workarounds</div>
+        <p>Starred texts, screenshot folders, Notes app lists with no context, siloed saves in Letterboxd / Google Maps / Yelp. All lose the "who told me and why."</p>
+      </div>
+      <div class="callout">
+        <div class="callout-title">What he actually wants</div>
+        <p>One page. Everything across every category. Who recommended it. Add it in under 10 seconds while the conversation is still fresh.</p>
+      </div>
+    </div>
+
+    <h2>Goals</h2>
+    <table>
+      <thead><tr><th>Goal</th><th>Success signal</th></tr></thead>
+      <tbody>
+        <tr><td>Capture any rec in under 10 seconds</td><td>Add flow from tap to saved ≤ 10s</td></tr>
+        <tr><td>Always know who recommended what</td><td>Recommender name visible on every card without expanding</td></tr>
+        <tr><td>Single view across all categories</td><td>All recs on one scrollable page, groupable by category</td></tr>
+        <tr><td>Distinguish done from wishlist</td><td>Completed items stay visible but visually separated</td></tr>
+        <tr><td>Share a rec or the whole list</td><td>Send to any Gmail address in ≤ 3 taps</td></tr>
+      </tbody>
+    </table>
+
+    <h2>User Stories</h2>
+    <div class="story-list">
+      <div class="story"><span class="story-num">US-01</span><span>As Shreyans, I want to add a recommendation in under 10 seconds so I can capture it before I forget the context.</span></div>
+      <div class="story"><span class="story-num">US-02</span><span>As Shreyans, I want to see all my recs on one page grouped by category so I can browse everything at a glance.</span></div>
+      <div class="story"><span class="story-num">US-03</span><span>As Shreyans, I want every card to show who recommended it so the social context is never lost.</span></div>
+      <div class="story"><span class="story-num">US-04</span><span>As Shreyans, I want to filter by category so I can find "what movie should we watch tonight" quickly.</span></div>
+      <div class="story"><span class="story-num">US-05</span><span>As Shreyans, I want to mark an item done so my wishlist stays focused on what's still ahead.</span></div>
+      <div class="story"><span class="story-num">US-06</span><span>As Shreyans, I want to undo a "done" mark in case I tapped it by accident.</span></div>
+      <div class="story"><span class="story-num">US-07</span><span>As Shreyans, I want to add a note to a rec (what they said about it) so the reason behind the recommendation isn't lost.</span></div>
+      <div class="story"><span class="story-num">US-08</span><span>As Shreyans, I want to send a rec or my full list to a friend's Gmail so recommendations travel back out as easily as they came in.</span></div>
+      <div class="story"><span class="story-num">US-09</span><span>As Shreyans, I want to switch between a compact Board view and an editorial Shelf view depending on my mood.</span></div>
+    </div>
+
+    <h2>MVP Scope</h2>
+    <div class="grid-2">
+      <div>
+        <h3 style="padding-top:0;">In scope</h3>
+        <div class="checklist">
+          <div class="check-item"><span class="check-in">✓</span> Google sign-in (auth)</div>
+          <div class="check-item"><span class="check-in">✓</span> Add a recommendation (title, category, by, notes)</div>
+          <div class="check-item"><span class="check-in">✓</span> Board view — card grid grouped by category</div>
+          <div class="check-item"><span class="check-in">✓</span> Shelf view — editorial sidebar + list</div>
+          <div class="check-item"><span class="check-in">✓</span> Category filter tabs</div>
+          <div class="check-item"><span class="check-in">✓</span> Expand card to view/edit notes</div>
+          <div class="check-item"><span class="check-in">✓</span> Mark done / undo</div>
+          <div class="check-item"><span class="check-in">✓</span> Delete a rec</div>
+          <div class="check-item"><span class="check-in">✓</span> Share a single rec via Gmail</div>
+          <div class="check-item"><span class="check-in">✓</span> Share the full list via Gmail</div>
+          <div class="check-item"><span class="check-in">✓</span> Done shelf (collapsible)</div>
+          <div class="check-item"><span class="check-in">✓</span> Recommender quick-pick (reuse past names)</div>
+        </div>
+      </div>
+      <div>
+        <h3 style="padding-top:0;">Out of scope (v1)</h3>
+        <div class="checklist">
+          <div class="check-item"><span class="check-out">–</span> Friend/family accounts or collaborative lists</div>
+          <div class="check-item"><span class="check-out">–</span> Push or email reminders</div>
+          <div class="check-item"><span class="check-out">–</span> Ratings or reviews after completing</div>
+          <div class="check-item"><span class="check-out">–</span> Import from iMessage / WhatsApp</div>
+          <div class="check-item"><span class="check-out">–</span> Link field (Google Maps, Letterboxd URL)</div>
+          <div class="check-item"><span class="check-out">–</span> Drag-to-reorder</div>
+          <div class="check-item"><span class="check-out">–</span> Native mobile app</div>
+          <div class="check-item"><span class="check-out">–</span> Offline mode</div>
+        </div>
+      </div>
+    </div>
+
+    <h2>Categories</h2>
+    <div class="grid-2" style="margin-top:4px;">
+      <div class="callout accent-indigo"><div class="callout-title">Movies</div><p>Films, documentaries, series to watch.</p></div>
+      <div class="callout accent-amber"><div class="callout-title">Restaurants</div><p>Restaurants, cafés, bakeries, food spots.</p></div>
+      <div class="callout accent-green"><div class="callout-title">Parks &amp; Museums</div><p>Outdoor spots, kid-friendly venues, cultural institutions.</p></div>
+      <div class="callout accent-slate"><div class="callout-title">Other</div><p>Books, experiences, activities, classes — anything else.</p></div>
+    </div>
+  </main>
+
+  <!-- ════════════════════════════════════════
+       DESIGN TAB
+  ════════════════════════════════════════ -->
+  <main id="tab-design" class="content">
+    <h1>Design</h1>
+    <p class="lead">Reclist has two modes — Board and Shelf — sharing a common component language but each with its own mood. Board is modern and spatial; Shelf is editorial and calm.</p>
+
+    <div class="section-rule" style="margin-top:16px;"></div>
+
+    <h2>Visual Direction</h2>
+    <div class="grid-2" style="margin-top:4px;">
+      <div class="callout">
+        <div class="callout-title">Board</div>
+        <p>Light neutral background, white cards on a grid, colored accent bars per category. Dense, scannable, card-first. Feels like a personal Notion or Airtable.</p>
+        <p style="padding-bottom:0;"><code>#F9F8F6</code> bg · Geist sans · pill tabs · slide-in add panel</p>
+      </div>
+      <div class="callout">
+        <div class="callout-title">Shelf</div>
+        <p>Warmer parchment background, fixed sidebar nav, Instrument Serif for headings. Numbered list with Serif titles. Feels like a reading list or a favourite notebook.</p>
+        <p style="padding-bottom:0;"><code>#EFEAE0</code> bg · Instrument Serif + Geist · rail nav · inline add form</p>
+      </div>
+    </div>
+
+    <h2>Color Palette</h2>
+    <h3 style="padding-top:12px;">Category accents</h3>
+    <div class="swatches">
+      <div class="swatch"><div class="swatch-dot" style="background:oklch(0.45 0.14 285)"></div><div><div class="swatch-name">Movies — Indigo</div><div class="swatch-val">oklch(0.45 0.14 285)</div></div></div>
+      <div class="swatch"><div class="swatch-dot" style="background:oklch(0.6 0.13 62)"></div><div><div class="swatch-name">Restaurants — Amber</div><div class="swatch-val">oklch(0.6 0.13 62)</div></div></div>
+      <div class="swatch"><div class="swatch-dot" style="background:oklch(0.47 0.09 152)"></div><div><div class="swatch-name">Parks — Forest</div><div class="swatch-val">oklch(0.47 0.09 152)</div></div></div>
+      <div class="swatch"><div class="swatch-dot" style="background:oklch(0.52 0.02 260)"></div><div><div class="swatch-name">Other — Slate</div><div class="swatch-val">oklch(0.52 0.02 260)</div></div></div>
+    </div>
+    <h3>Neutrals</h3>
+    <div class="swatches">
+      <div class="swatch"><div class="swatch-dot" style="background:#17150F; border:1px solid #eee"></div><div><div class="swatch-name">Text / CTA</div><div class="swatch-val">#17150F</div></div></div>
+      <div class="swatch"><div class="swatch-dot" style="background:#F9F8F6; border:1px solid #e5e4e1"></div><div><div class="swatch-name">Board BG</div><div class="swatch-val">#F9F8F6</div></div></div>
+      <div class="swatch"><div class="swatch-dot" style="background:#EFEAE0; border:1px solid #e0d9cc"></div><div><div class="swatch-name">Shelf BG</div><div class="swatch-val">#EFEAE0</div></div></div>
+      <div class="swatch"><div class="swatch-dot" style="background:#fff; border:1px solid #e5e4e1"></div><div><div class="swatch-name">Card / Surface</div><div class="swatch-val">#FFFFFF</div></div></div>
+      <div class="swatch"><div class="swatch-dot" style="background:oklch(0.91 0.006 90); border:1px solid #ddd"></div><div><div class="swatch-name">Border</div><div class="swatch-val">oklch(0.91 0.006 90)</div></div></div>
+    </div>
+
+    <h2>Typography</h2>
+    <table>
+      <thead><tr><th>Role</th><th>Typeface</th><th>Weight · Size</th><th>Usage</th></tr></thead>
+      <tbody>
+        <tr><td>UI body</td><td>Geist</td><td>400–600 · 13–17px</td><td>All body copy, labels, buttons — both views</td></tr>
+        <tr><td>Mono labels</td><td>Geist Mono</td><td>400–500 · 10–12px</td><td>Section headers, counts, tags, form labels (uppercase + tracking)</td></tr>
+        <tr><td>Editorial headings</td><td>Instrument Serif</td><td>Regular + Italic · 25–46px</td><td>Shelf view only — page title, item titles, notes textarea</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Spacing &amp; Layout</h2>
+    <table>
+      <thead><tr><th>Token</th><th>Value</th><th>Used for</th></tr></thead>
+      <tbody>
+        <tr><td>Page max-width</td><td>1080px (Board) · 860px (Shelf content)</td><td>Content container</td></tr>
+        <tr><td>Page padding</td><td>34px top · 28px sides · 90px bottom</td><td>Board page</td></tr>
+        <tr><td>Card radius</td><td>12px</td><td>Recommendation cards (Board)</td></tr>
+        <tr><td>Card shadow (rest)</td><td>0 2px 8px rgba(0,0,0,0.07)</td><td>Default card elevation</td></tr>
+        <tr><td>Card shadow (hover)</td><td>0 8px 20px rgba(0,0,0,0.09)</td><td>Hover / expanded state</td></tr>
+        <tr><td>Card shadow (focus)</td><td>0 10px 26px rgba(0,0,0,0.11)</td><td>Expanded + selected</td></tr>
+        <tr><td>Card grid</td><td>minmax(232px, 1fr) — all · minmax(400px, 1fr) — single cat</td><td>Board grid-template-columns</td></tr>
+        <tr><td>Card top bar</td><td>3px</td><td>Category accent strip at top of card</td></tr>
+        <tr><td>Modal radius</td><td>14px</td><td>Share dialog, account picker</td></tr>
+        <tr><td>Shelf sidebar width</td><td>236px fixed</td><td>Shelf rail</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Animation</h2>
+    <div class="anim-row"><div class="anim-name">rl-rise</div><div class="anim-desc">Fade up from 10px below — modals, expanded card sections, tooltips, menus</div><div class="anim-val">0.14–0.22s ease</div></div>
+    <div class="anim-row"><div class="anim-name">rl-slide</div><div class="anim-desc">Slide in from 24px right — Add panel (Board mode)</div><div class="anim-val">0.24s ease</div></div>
+    <div class="anim-row"><div class="anim-name">card hover</div><div class="anim-desc">translateY(-2px) + shadow deepens — all wishlist cards</div><div class="anim-val">0.18s ease</div></div>
+    <div class="anim-row"><div class="anim-name">tab / button</div><div class="anim-desc">Background + color swap — all interactive elements</div><div class="anim-val">0.15s ease</div></div>
+
+    <h2>UI Components</h2>
+
+    <!-- Card -->
+    <div class="preview-box">
+      <div class="preview-label">Recommendation Card — Board view</div>
+      <div class="preview-area" style="display:flex;gap:14px;flex-wrap:wrap;">
+        <div class="demo-card">
+          <div class="demo-card-bar" style="background:oklch(0.45 0.14 285)"></div>
+          <div class="demo-card-body">
+            <div class="demo-card-cat" style="color:oklch(0.45 0.14 285)">Movies</div>
+            <div><div class="demo-card-title">The Brutalist</div><div class="demo-card-meta">Drama · 3h 35m</div></div>
+            <div class="demo-card-rec">
+              <div class="demo-card-avatar" style="background:oklch(0.45 0.14 285)">D</div>
+              <span class="demo-card-by">Dad</span>
+            </div>
+          </div>
+        </div>
+        <div class="demo-card">
+          <div class="demo-card-bar" style="background:oklch(0.6 0.13 62)"></div>
+          <div class="demo-card-body">
+            <div class="demo-card-cat" style="color:oklch(0.6 0.13 62)">Restaurants</div>
+            <div><div class="demo-card-title">Nopalito</div><div class="demo-card-meta">San Francisco · Mexican</div></div>
+            <div class="demo-card-rec">
+              <div class="demo-card-avatar" style="background:oklch(0.6 0.13 62)">M</div>
+              <span class="demo-card-by">Meera</span>
+            </div>
+          </div>
+        </div>
+        <div class="demo-card">
+          <div class="demo-card-bar" style="background:oklch(0.47 0.09 152)"></div>
+          <div class="demo-card-body">
+            <div class="demo-card-cat" style="color:oklch(0.47 0.09 152)">Parks &amp; Museums</div>
+            <div><div class="demo-card-title">Muir Woods</div><div class="demo-card-meta">Marin · Nature</div></div>
+            <div class="demo-card-rec">
+              <div class="demo-card-avatar" style="background:oklch(0.47 0.09 152)">M</div>
+              <span class="demo-card-by">Mom</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category filter tabs -->
+    <div class="preview-box">
+      <div class="preview-label">Category Filter Tabs</div>
+      <div class="preview-area">
+        <div class="demo-tabs">
+          <div class="demo-tab demo-tab-active"><span style="width:7px;height:7px;border-radius:999px;background:#F9F8F6;"></span>All<span class="demo-tab-count">7</span></div>
+          <div class="demo-tab demo-tab-idle"><span class="demo-tab-dot" style="background:oklch(0.45 0.14 285)"></span>Movies<span class="demo-tab-count">2</span></div>
+          <div class="demo-tab demo-tab-idle"><span class="demo-tab-dot" style="background:oklch(0.6 0.13 62)"></span>Restaurants<span class="demo-tab-count">2</span></div>
+          <div class="demo-tab demo-tab-idle"><span class="demo-tab-dot" style="background:oklch(0.47 0.09 152)"></span>Parks &amp; Museums<span class="demo-tab-count">2</span></div>
+          <div class="demo-tab demo-tab-idle"><span class="demo-tab-dot" style="background:oklch(0.52 0.02 260)"></span>Other<span class="demo-tab-count">1</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section header -->
+    <div class="preview-box">
+      <div class="preview-label">Category Section Header</div>
+      <div class="preview-area">
+        <div class="section-head">
+          <div class="section-head-diamond" style="background:oklch(0.45 0.14 285)"></div>
+          <div class="section-head-label">Movies</div>
+          <div class="section-head-rule"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Done shelf chips -->
+    <div class="preview-box">
+      <div class="preview-label">Done Shelf</div>
+      <div class="preview-area" style="background:#F1F0ED;border-radius:12px;padding:16px 20px;">
+        <div style="font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:oklch(0.55 0.01 90);padding-bottom:12px;">▾  Done · 2</div>
+        <div class="demo-chips">
+          <div class="demo-chip"><span class="demo-chip-check">✓</span>Oppenheimer<span style="opacity:0.6">· Dad</span><button class="demo-chip-undo">undo</button></div>
+          <div class="demo-chip"><span class="demo-chip-check">✓</span>State Bird Provisions<span style="opacity:0.6">· Meera</span><button class="demo-chip-undo">undo</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tags -->
+    <div class="preview-box">
+      <div class="preview-label">Tags &amp; Badges</div>
+      <div class="preview-area" style="display:flex;flex-wrap:wrap;gap:8px;">
+        <span class="tag tag-indigo">🎬 Movies</span>
+        <span class="tag tag-amber">🍽 Restaurants</span>
+        <span class="tag tag-green">🌳 Parks</span>
+        <span class="tag tag-slate">··· Other</span>
+        <span class="tag tag-neutral">Shared</span>
+      </div>
+    </div>
+
+    <h2>Interactive States</h2>
+    <table>
+      <thead><tr><th>Component</th><th>Default</th><th>Hover</th><th>Active / Selected</th></tr></thead>
+      <tbody>
+        <tr><td>Card</td><td>shadow 0 2px 8px</td><td>translateY(-2px) · shadow deepens</td><td>translateY(-2px) · shadow 0 10px 26px · expanded content visible</td></tr>
+        <tr><td>Category tab</td><td>White bg · muted text · light border</td><td>Darker border · text darken</td><td>bg #17150F · text #F9F8F6</td></tr>
+        <tr><td>Primary button</td><td>bg #17150F · white text</td><td>bg oklch(0.45 0.14 285) — indigo</td><td>—</td></tr>
+        <tr><td>Input / Textarea</td><td>bg #FCFCFB · light border</td><td>—</td><td>border #17150F · bg #fff</td></tr>
+        <tr><td>Row (Shelf)</td><td>Transparent bg</td><td>bg #F7F4EE</td><td>bg #F7F4EE · expanded</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Accessibility Notes</h2>
+    <div class="callout" style="margin-top:4px;">
+      <p>All interactive elements use <code>cursor: pointer</code>. Focus styles should be added for keyboard navigation (currently implicit via browser defaults — add explicit <code>:focus-visible</code> outlines before shipping). Color is never the only differentiator — category labels accompany accent colors on every card. Animation respects <code>prefers-reduced-motion</code> — add <code>@media (prefers-reduced-motion)</code> guards before v1.</p>
+    </div>
+  </main>
+
+  <!-- ════════════════════════════════════════
+       TECH TAB
+  ════════════════════════════════════════ -->
+  <main id="tab-tech" class="content">
+    <h1>Tech</h1>
+    <p class="lead">Simple, ship-fast stack. The design file is already a working component — implementation is a translation from <code>.dc.html</code> format to a standard Next.js app.</p>
+
+    <div class="section-rule" style="margin-top:16px;"></div>
+
+    <h2>Stack</h2>
+    <table>
+      <thead><tr><th>Layer</th><th>Choice</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td>Framework</td><td>Next.js 15 (App Router)</td><td>React server components, fast cold start on Vercel, file-based routing</td></tr>
+        <tr><td>Styling</td><td>Tailwind CSS v4</td><td>Utility-first, pairs well with the inline-style patterns in the design file; easy to port</td></tr>
+        <tr><td>Auth</td><td>NextAuth.js + Google OAuth</td><td>The design shows a Google account picker — NextAuth makes this a 30-line setup</td></tr>
+        <tr><td>Database</td><td>Supabase (Postgres)</td><td>Persistence across devices from day one; realtime available if needed later; free tier generous</td></tr>
+        <tr><td>ORM</td><td>Drizzle</td><td>Lightweight, TypeScript-native, works well with Supabase Postgres</td></tr>
+        <tr><td>Email / Share</td><td>Resend</td><td>Simple API, Gmail-friendly deliverability, free tier covers MVP volume</td></tr>
+        <tr><td>Deployment</td><td>Vercel</td><td>One-command deploy, edge functions, preview URLs per PR</td></tr>
+        <tr><td>Fonts</td><td>Google Fonts CDN</td><td>Geist, Geist Mono, Instrument Serif — already in design file</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Data Schema</h2>
+    <div class="schema">
+<span class="comment">-- users (managed by NextAuth)</span>
+<span class="key">users</span> {
+  <span class="key">id</span>         <span class="type">uuid</span>         primary key
+  <span class="key">name</span>       <span class="type">text</span>
+  <span class="key">email</span>      <span class="type">text</span>         unique
+  <span class="key">image</span>      <span class="type">text</span>         nullable
+  <span class="key">created_at</span> <span class="type">timestamptz</span>  default now()
+}
+
+<span class="comment">-- recommendations</span>
+<span class="key">recs</span> {
+  <span class="key">id</span>             <span class="type">uuid</span>         primary key  default gen_random_uuid()
+  <span class="key">user_id</span>        <span class="type">uuid</span>         references users(id) on delete cascade
+  <span class="key">title</span>          <span class="type">text</span>         not null
+  <span class="key">category</span>       <span class="type">text</span>         check in ('movies','restaurants','parks','other')
+  <span class="key">recommended_by</span> <span class="type">text</span>         not null        <span class="comment">-- free-text name</span>
+  <span class="key">meta</span>           <span class="type">text</span>         nullable        <span class="comment">-- e.g. "SF · Mexican", "Drama · 3h"</span>
+  <span class="key">notes</span>          <span class="type">text</span>         nullable
+  <span class="key">status</span>         <span class="type">text</span>         default 'wishlist'  <span class="comment">-- 'wishlist' | 'done'</span>
+  <span class="key">shared_with</span>    <span class="type">text[]</span>       default '{}'    <span class="comment">-- array of email addresses</span>
+  <span class="key">created_at</span>     <span class="type">timestamptz</span>  default now()
+}
+
+<span class="comment">-- indexes</span>
+create index on <span class="key">recs</span> (<span class="key">user_id</span>, <span class="key">status</span>);
+create index on <span class="key">recs</span> (<span class="key">user_id</span>, <span class="key">category</span>);
+    </div>
+
+    <h2>Component Architecture</h2>
+    <table>
+      <thead><tr><th>Component</th><th>Type</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>RecBoard</code></td><td>Client</td><td>Card grid layout, category filter, manages expanded state</td></tr>
+        <tr><td><code>RecShelf</code></td><td>Client</td><td>Sidebar + list layout, same data, different presentation</td></tr>
+        <tr><td><code>RecCard</code></td><td>Client</td><td>Individual card — handles expand, done, delete, share actions</td></tr>
+        <tr><td><code>RecRow</code></td><td>Client</td><td>Shelf-mode row — Instrument Serif title, numbered, same actions</td></tr>
+        <tr><td><code>AddPanel</code></td><td>Client</td><td>Slide-in panel (Board) or inline form (Shelf)</td></tr>
+        <tr><td><code>ShareModal</code></td><td>Client</td><td>Gmail-target share dialog — single rec or full list</td></tr>
+        <tr><td><code>DoneShelf</code></td><td>Client</td><td>Collapsible done section — pill chips (Board) or strikethrough list (Shelf)</td></tr>
+        <tr><td><code>ViewSwitcher</code></td><td>Client</td><td>Floating pill at bottom — Board / Shelf toggle</td></tr>
+        <tr><td><code>UserMenu</code></td><td>Client</td><td>Avatar dropdown — user info + sign out</td></tr>
+        <tr><td><code>recs/route.ts</code></td><td>Server (API)</td><td>GET / POST / PATCH / DELETE for recs — session-scoped</td></tr>
+        <tr><td><code>share/route.ts</code></td><td>Server (API)</td><td>POST — sends email via Resend, updates shared_with array</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Key Design-to-Code Notes</h2>
+    <div class="callout accent-indigo" style="margin-top:4px;">
+      <div class="callout-title">The .dc.html format</div>
+      <p>The design file uses a custom reactive component format (<code>&lt;x-dc&gt;</code>, <code>&lt;sc-if&gt;</code>, <code>&lt;sc-for&gt;</code>) backed by <code>support.js</code>. The entire component logic lives in a <code>DCLogic</code> class with a <code>renderVals()</code> method that returns flat key-value pairs consumed by the template. This maps 1:1 to a React component with <code>useState</code> + derived values — no significant architectural lift.</p>
+    </div>
+    <div class="callout" style="margin-top:0;">
+      <div class="callout-title">Styles</div>
+      <p>All styles in the design file are inline strings using <code>oklch()</code> color. Port these to Tailwind utility classes + a <code>tailwind.config</code> that defines the four category accent colors as custom tokens. Keep <code>oklch</code> — it's supported in all modern browsers and is already the design's color model.</p>
+    </div>
+    <div class="callout" style="margin-top:0;">
+      <div class="callout-title">Animation</div>
+      <p>Two keyframe animations — <code>rl-rise</code> and <code>rl-slide</code> — defined in the design file's <code>&lt;helmet&gt;</code> block. Add these to <code>globals.css</code> and reference via Tailwind's <code>animate-*</code> or <code>animation</code> utility.</p>
+    </div>
+    <div class="callout" style="margin-top:0;">
+      <div class="callout-title">Grid columns</div>
+      <p>Board grid uses <code>minmax(232px, 1fr)</code> in "All" view, switching to <code>minmax(400px, 1fr)</code> for single-category views. This gives wider cards when there's more horizontal space — keep as a dynamic inline style or Tailwind JIT arbitrary value.</p>
+    </div>
+
+    <h2>Trade-offs</h2>
+    <div class="tradeoff-head"><div></div><div>Pro</div><div>Con</div></div>
+    <div class="tradeoff">
+      <div class="tradeoff-row">
+        <div class="tradeoff-label">Supabase vs localStorage</div>
+        <div class="tradeoff-pro">Works across devices; no data loss on cache clear; enables sharing flow</div>
+        <div class="tradeoff-con">Requires backend setup; adds latency to first load; network dependency</div>
+      </div>
+      <div class="tradeoff-row">
+        <div class="tradeoff-label">NextAuth vs Clerk</div>
+        <div class="tradeoff-pro">Free, open source, no vendor lock-in; Google OAuth is all we need for v1</div>
+        <div class="tradeoff-con">More manual setup vs Clerk's hosted UI; no magic links / SMS without extra work</div>
+      </div>
+      <div class="tradeoff-row">
+        <div class="tradeoff-label">Resend for share email</div>
+        <div class="tradeoff-pro">Simple API; great Gmail deliverability; generous free tier</div>
+        <div class="tradeoff-con">No two-way reply threading; recipient has no way to respond to the rec in-app</div>
+      </div>
+      <div class="tradeoff-row">
+        <div class="tradeoff-label">free-text "Recommended by"</div>
+        <div class="tradeoff-pro">Zero friction — type a name and move on; no contacts management needed</div>
+        <div class="tradeoff-con">No deduplication; "Mom", "Mom!", "mom" are different; quick-pick chips partially mitigate</div>
+      </div>
+      <div class="tradeoff-row">
+        <div class="tradeoff-label">Two views (Board + Shelf)</div>
+        <div class="tradeoff-pro">Different moods for different use cases; shows design ambition; good demo story</div>
+        <div class="tradeoff-con">Double the component surface to maintain; consider shipping one view first to reduce scope</div>
+      </div>
+    </div>
+
+    <h2>Build Plan</h2>
+    <div class="build-phases">
+      <div class="phase">
+        <div class="phase-label">Phase 1<br/>Foundation</div>
+        <div>
+          <div class="phase-title">Project setup + auth</div>
+          <div class="phase-items">Next.js + Tailwind + Supabase init · Drizzle schema migration · NextAuth Google OAuth · Sign-in page (matches design file auth screen) · Session middleware</div>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="phase-label">Phase 2<br/>Core</div>
+        <div>
+          <div class="phase-title">Board view + CRUD</div>
+          <div class="phase-items">RecBoard layout · RecCard component · Category filter tabs · Add panel (slide-in) · Mark done / undo · Delete · Done shelf · View switcher pill</div>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="phase-label">Phase 3<br/>Shelf</div>
+        <div>
+          <div class="phase-title">Shelf view</div>
+          <div class="phase-items">Sidebar rail · RecShelf layout · RecRow component · Inline add form · Instrument Serif editorial styling · Done section (strikethrough list)</div>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="phase-label">Phase 4<br/>Share</div>
+        <div>
+          <div class="phase-title">Sharing flow</div>
+          <div class="phase-items">Share modal · Resend integration · Share single rec · Share full list · "Shared" badge on card · shared_with persistence</div>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="phase-label">Phase 5<br/>Polish</div>
+        <div>
+          <div class="phase-title">Finish + ship</div>
+          <div class="phase-items">prefers-reduced-motion guards · focus-visible styles · Empty states · Mobile responsiveness · Vercel deploy + custom domain · Smoke test on real device</div>
+        </div>
+      </div>
+    </div>
+
+    <h2>Open Questions</h2>
+    <div class="checklist">
+      <div class="check-item"><span style="color:var(--accent-amber);font-size:13px;">?</span> Ship Board-only first to reduce scope, add Shelf in v1.1?</div>
+      <div class="check-item"><span style="color:var(--accent-amber);font-size:13px;">?</span> Should "Recommended by" become a saved-contacts model in v2 (to enable filtering by person)?</div>
+      <div class="check-item"><span style="color:var(--accent-amber);font-size:13px;">?</span> Add a URL/link field per rec (Google Maps, Letterboxd) — deferred from MVP?</div>
+      <div class="check-item"><span style="color:var(--accent-amber);font-size:13px;">?</span> Should the email share flow generate a read-only public URL instead of (or in addition to) an email?</div>
+    </div>
+  </main>
+
+</div>
+
+<script>
+  function switchTab(id) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    event.currentTarget.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+</script>
+</body>
+</html>
