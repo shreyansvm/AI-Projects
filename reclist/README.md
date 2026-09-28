@@ -1,36 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Reclist
 
-## Getting Started
+> Good advice, saved.
 
-First, run the development server:
+A personal wishlist for recommendations from family and friends — movies, restaurants, parks, museums, and anything else — all in one place, with who told you.
+
+## Screenshots
+
+### Landing page
+![Sign-in](docs/screenshots/01-sign-in.png)
+
+### Board view
+Cards grouped by category, each showing the recommender. Switch categories with the filter tabs.
+
+![Board view](docs/screenshots/02-board.png)
+
+### Add a rec
+Slide-in panel with quick-pick chips for past recommenders. Details field auto-suggests based on category.
+
+![Add panel](docs/screenshots/03-add-panel.png)
+
+### Expanded card
+Click any card to expand it — edit notes, mark done, or delete.
+
+![Card expanded](docs/screenshots/04-card-expanded.png)
+
+### Shelf view
+An editorial alternative to the board. Toggle between views with the floating pill at the bottom.
+
+![Shelf view](docs/screenshots/05-shelf.png)
+
+## Stack
+
+| Layer | Choice |
+|---|---|
+| Framework | Next.js 16 (App Router) |
+| Styling | Tailwind CSS v4 |
+| Auth | NextAuth v5 (Google OAuth) |
+| Database | SQLite via Drizzle ORM |
+| Fonts | Geist · Geist Mono · Instrument Serif |
+
+## Running locally
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). Click **Get started →** to use the app without Google sign-in.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+To enable Google sign-in, add credentials to `.env.local`:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
+NEXTAUTH_SECRET=any-random-string
+AUTH_URL=http://localhost:3000
+```
 
-## Learn More
+Get credentials at [console.cloud.google.com](https://console.cloud.google.com) → APIs & Services → Credentials → OAuth Client ID (Web). Add `http://localhost:3000/api/auth/callback/google` as an authorized redirect URI.
 
-To learn more about Next.js, take a look at the following resources:
+## Docs
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Problem Definition](docs/Problem%20Definition.md)
+- [Design](docs/Design.md)
+- [Product · Design · Tech Spec](docs/Reclist%20Spec.html)
